@@ -75,6 +75,16 @@ func UnmarshalSDP(rawSDP []byte) ([]*core.Media, error) {
 				if codec.FmtpLine == "" {
 					codec.FmtpLine = findFmtpLine(codec.PayloadType, sd.MediaDescriptions)
 				}
+			case core.CodecH265:
+				if codec.FmtpLine != "" {
+					// all three parameters are needed for a valid fmtp line
+					// https://github.com/AlexxIT/go2rtc/pull/1588
+					if !strings.Contains(codec.FmtpLine, "sprop-vps=") ||
+						!strings.Contains(codec.FmtpLine, "sprop-sps=") ||
+						!strings.Contains(codec.FmtpLine, "sprop-pps=") {
+						codec.FmtpLine = ""
+					}
+				}
 			case core.CodecOpus:
 				// fix OPUS for some cameras https://datatracker.ietf.org/doc/html/rfc7587
 				codec.ClockRate = 48000
